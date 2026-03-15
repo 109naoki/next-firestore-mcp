@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /threads/{threadId} {
+      allow read, write: if request.auth != null
+        && request.auth.token.email_verified
+        && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null
+        && request.auth.token.email_verified
+        && request.resource.data.userId == request.auth.uid;
+
+      match /messages/{messageId} {
+        allow read, write: if request.auth != null
+          && request.auth.token.email_verified
+          && get(/databases/$(database)/documents/threads/$(threadId)).data.userId
+             == request.auth.uid;
+      }
+    }
+  }
+}
