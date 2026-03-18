@@ -2,7 +2,8 @@
 
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "ai";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { ChevronRight } from "lucide-react";
 
 interface Props {
   messages: UIMessage[];
@@ -84,26 +85,7 @@ const MessagePartView = ({
       toolPart.state === "output-error";
 
     return (
-      <div className="mt-2 p-2 rounded-md bg-background/50 border border-border/50 text-xs">
-        <div className="flex items-center gap-2 font-medium text-muted-foreground">
-          <span className="truncate">Tool: {toolName}</span>
-          <span
-            className={cn(
-              "flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px]",
-              isDone
-                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-            )}
-          >
-            {isDone ? "done" : "calling..."}
-          </span>
-        </div>
-        {isDone && toolPart.output != null && (
-          <pre className="mt-1 text-[10px] overflow-x-auto text-muted-foreground">
-            {JSON.stringify(toolPart.output, null, 2).slice(0, 500)}
-          </pre>
-        )}
-      </div>
+      <ToolCallView toolName={toolName} isDone={isDone} output={toolPart.output} />
     );
   }
 
@@ -116,6 +98,48 @@ const MessagePartView = ({
   }
 
   return null;
+};
+
+const ToolCallView = ({
+  toolName,
+  isDone,
+  output,
+}: {
+  toolName: string;
+  isDone: boolean;
+  output?: unknown;
+}) => {
+  const [open, setOpen] = useState(false);
+  const hasOutput = isDone && output != null;
+
+  return (
+    <div className="mt-1.5 text-xs text-muted-foreground">
+      <button
+        type="button"
+        className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+        onClick={() => hasOutput && setOpen((v) => !v)}
+        disabled={!hasOutput}
+      >
+        {!isDone ? (
+          <span className="size-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <ChevronRight
+            className={cn(
+              "size-3 transition-transform",
+              open && "rotate-90",
+            )}
+          />
+        )}
+        <span className="font-medium">{toolName}</span>
+        {!isDone && <span className="opacity-60">running...</span>}
+      </button>
+      {open && hasOutput && (
+        <pre className="mt-1 ml-4.5 p-2 rounded bg-background/50 border border-border/50 text-[10px] overflow-x-auto max-h-[200px] overflow-y-auto">
+          {JSON.stringify(output, null, 2).slice(0, 2000)}
+        </pre>
+      )}
+    </div>
+  );
 };
 
 const ThinkingIndicator = () => {

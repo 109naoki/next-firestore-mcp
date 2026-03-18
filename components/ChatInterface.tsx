@@ -72,6 +72,23 @@ export const ChatInterface = ({
     sendMessage({ text });
   };
 
+  const handleParseFile = useCallback(
+    async (file: File): Promise<{ text: string; truncated: boolean }> => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await authFetch("/api/parse-file", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Parse failed");
+      }
+      return res.json();
+    },
+    [authFetch],
+  );
+
   if (authLoading || !isAuthenticated) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -109,7 +126,7 @@ export const ChatInterface = ({
       </div>
 
       {/* Input */}
-      <ChatInput onSend={handleSend} isLoading={isLoading} />
+      <ChatInput onSend={handleSend} parseFile={handleParseFile} isLoading={isLoading} />
     </div>
   );
 };
