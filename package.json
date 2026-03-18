@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 4100",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -21,19 +21,23 @@
     "clsx": "^2.1.1",
     "firebase": "^12.10.0",
     "firebase-admin": "^13.7.0",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
+    "pdf-parse": "^2.4.5",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.2",
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.5.0",
+    "xlsx": "^0.18.5",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

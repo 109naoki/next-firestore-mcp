@@ -5,6 +5,7 @@ export interface MCPServerConfig {
   name: string;
   url: string;
   headers?: Record<string, string>;
+  transport?: "sse" | "http";
 }
 
 export interface MCPToolsResult {
@@ -27,10 +28,12 @@ export const getDefaultMCPServers = (): MCPServerConfig[] => {
         console.error(`Failed to parse MCP_SERVER_HEADERS_${i}`);
       }
     }
+    const transport = process.env[`MCP_SERVER_TRANSPORT_${i}`];
     servers.push({
       name: `server-${i}`,
       url: process.env[`MCP_SERVER_URL_${i}`]!,
       headers,
+      transport: transport === "http" ? "http" : "sse",
     });
     i++;
   }
@@ -47,9 +50,10 @@ export const createMCPTools = async (
 
   const clients = await Promise.all(
     servers.map(async (server) => {
+      const transportType = server.transport ?? "sse";
       const client = await createMCPClient({
         transport: {
-          type: "sse",
+          type: transportType,
           url: server.url,
           headers: server.headers,
         },

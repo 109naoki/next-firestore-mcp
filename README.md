@@ -3,19 +3,30 @@
 MCP (Model Context Protocol) 経由で外部ツールを活用できる AI チャット UI。
 Anthropic Claude / OpenAI / Google Gemini をバックエンドに、ストリーミング応答・スレッド管理・認証を備えた Next.js アプリケーション。
 
+## Features
+
+- **マルチモデル対応** — Claude / GPT / Gemini を切り替え可能
+- **MCP ツール連携** — 外部 MCP サーバー経由で AI にツールを提供（SSE / HTTP transport）
+- **Web 検索** — Tavily Remote MCP によるリアルタイム Web 検索
+- **音声入力** — Web Speech API によるマイク入力（Chrome/Edge/Safari 対応）
+- **ファイル添付** — PDF / Excel / PPTX / テキストファイルを添付して AI に分析させる（最大3ファイル）
+- **ストリーミング応答** — リアルタイムでトークンを表示
+- **スレッド管理** — 会話の保存・一覧・切り替え
+- **Firebase 認証** — メール認証によるユーザー管理
+
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16 (App Router) |
+| Layer          | Technology                                                                                        |
+| -------------- | ------------------------------------------------------------------------------------------------- |
+| Framework      | Next.js 16 (App Router)                                                                           |
 | AI / Streaming | Vercel AI SDK v6 (`ai`, `@ai-sdk/react`, `@ai-sdk/anthropic`, `@ai-sdk/openai`, `@ai-sdk/google`) |
-| MCP Client | `@ai-sdk/mcp` (SSE transport) |
-| Auth | Firebase Authentication (Client SDK + Admin SDK, Bearer トークン方式) |
-| Database | Cloud Firestore |
-| Form | react-hook-form + zod |
-| Data Fetching | TanStack Query |
-| UI | Tailwind CSS v4 + shadcn/ui + Radix UI |
-| Deployment | Vercel |
+| MCP Client     | `@ai-sdk/mcp` (SSE / HTTP transport)                                                              |
+| Auth           | Firebase Authentication (Client SDK + Admin SDK, Bearer トークン方式)                             |
+| Database       | Cloud Firestore                                                                                   |
+| Form           | react-hook-form + zod                                                                             |
+| Data Fetching  | TanStack Query                                                                                    |
+| UI             | Tailwind CSS v4 + shadcn/ui + Radix UI                                                            |
+| Deployment     | Vercel                                                                                            |
 
 ## Architecture
 
@@ -64,6 +75,7 @@ API Route → verifyToken() → Firebase Admin verifyIdToken()
 │   │   └── verify-email/page.tsx        # メール認証確認画面
 │   ├── api/
 │   │   ├── chat/route.ts                # Chat API: MCP + streamText + Firestore 保存
+│   │   ├── parse-file/route.ts          # ファイル解析 API (PDF/Excel/PPTX/テキスト)
 │   │   └── threads/
 │   │       ├── route.ts                 # スレッド一覧 GET
 │   │       ├── create/route.ts          # スレッド作成 POST
@@ -79,23 +91,27 @@ API Route → verifyToken() → Firebase Admin verifyIdToken()
 ├── components/
 │   ├── ChatInterface.tsx                # useChat hook でストリーミング統合
 │   ├── ChatMessages.tsx                 # メッセージ表示 + ツール実行表示
-│   ├── ChatInput.tsx                    # 入力 UI (Enter 送信, Shift+Enter 改行)
+│   ├── ChatInput.tsx                    # 入力 UI (音声入力, ファイル添付, Enter 送信)
 │   ├── ModelSelector.tsx                # モデル切り替え (Claude / GPT / Gemini)
 │   ├── ThreadSidebar.tsx                # スレッド一覧・新規作成・削除
 │   ├── providers/QueryProvider.tsx      # TanStack Query Provider
 │   └── ui/                             # shadcn/ui コンポーネント
 ├── hooks/
 │   ├── use-auth.ts                      # Firebase 認証状態管理 + authFetch
+│   ├── use-speech-recognition.ts        # Web Speech API 音声入力 hook
 │   └── use-threads.ts                   # TanStack Query hooks (スレッド CRUD)
 ├── lib/
 │   ├── firebase-admin.ts                # Firebase Admin SDK 初期化 (server-only)
 │   ├── firebase-client.ts               # Firebase Client SDK 初期化
 │   ├── verify-token.ts                  # Bearer トークン検証
 │   ├── auth-chat-transport.ts           # AI SDK transport に認証を付与
-│   ├── mcp-clients.ts                   # MCP Client factory
+│   ├── file-parsers.ts                  # ファイルテキスト抽出 (PDF/Excel/PPTX)
+│   ├── mcp-clients.ts                   # MCP Client factory (SSE/HTTP)
 │   ├── threads.ts                       # Firestore スレッド操作
 │   ├── types.ts                         # 型定義
 │   └── utils.ts                         # cn() ヘルパー
+├── types/
+│   └── speech-recognition.d.ts          # Web Speech API 型定義
 ├── firestore.indexes.json               # Firestore 複合インデックス定義
 ├── firestore.rules                      # Firestore セキュリティルール
 └── vercel.json                          # Chat API maxDuration: 60s
@@ -160,7 +176,12 @@ GOOGLE_GENERATIVE_AI_API_KEY=...   # 任意
 # MCP Server URLs (numbered, add as many as needed)
 MCP_SERVER_URL_1=https://your-mcp-server.example.com/sse
 MCP_SERVER_URL_2=http://localhost:3001/sse
-# MCP_SERVER_HEADERS_1='{"Authorization":"Bearer xxx"}'  # 認証が必要な場合
+# MCP_SERVER_HEADERS_1='{"Authorization":"Bearer xxx"}'   # 認証が必要な場合
+# MCP_SERVER_TRANSPORT_2=http                              # HTTP transport (default: sse)
+
+# Tavily Web Search (Remote MCP)
+MCP_SERVER_URL_3=https://mcp.tavily.com/mcp/?tavilyApiKey=your-key
+MCP_SERVER_TRANSPORT_3=http
 ```
 
 ### 3. Deploy Firestore indexes & rules
@@ -177,19 +198,28 @@ firebase deploy --only firestore:indexes,firestore:rules
 pnpm dev
 ```
 
-http://localhost:3000 にアクセス。初回はユーザー登録 → メール認証 → チャット画面の順に進む。
+http://localhost:4100 にアクセス。初回はユーザー登録 → メール認証 → チャット画面の順に進む。
 
 ## MCP Server Configuration
 
 MCP サーバーを接続するには `.env.local` に URL を追加:
 
 ```bash
+# SSE transport (default)
 MCP_SERVER_URL_1=https://your-mcp-server.vercel.app/sse
-MCP_SERVER_URL_2=http://localhost:3001/sse
+
+# HTTP transport (Streamable HTTP)
+MCP_SERVER_URL_2=https://mcp.tavily.com/mcp/?tavilyApiKey=your-key
+MCP_SERVER_TRANSPORT_2=http
+
+# 認証が必要なサーバー
+MCP_SERVER_URL_3=https://private-mcp-server.example.com/sse
+MCP_SERVER_HEADERS_3='{"Authorization":"Bearer your-token"}'
 ```
 
 番号を増やせば複数サーバーに同時接続可能。
 各サーバーのツールは自動的にマージされ、チャット中に AI が使用できる。
+トランスポートは `MCP_SERVER_TRANSPORT_N` で `sse`（デフォルト）または `http` を指定。
 
 設定しない場合はツールなしの素のチャットとして動作する。
 

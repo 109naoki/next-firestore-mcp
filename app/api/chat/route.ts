@@ -92,7 +92,9 @@ export const POST = async (request: NextRequest) => {
     model: resolveModel(model),
     system: `You are a helpful AI assistant with access to various tools via MCP.
 Use tools when they help you provide better answers.
-Always be clear about what tools you used and what you found.`,
+Always be clear about what tools you used and what you found.
+When the user asks about recent events, current information, or topics that require up-to-date data, use the web search tool to find relevant information. Cite sources when providing search-based answers.
+When the user's message contains <attached-files> blocks, analyze the file contents provided and reference specific data when answering.`,
     messages: modelMessages,
     tools: tools as Parameters<typeof streamText>[0]["tools"],
     stopWhen: stepCountIs(10),
