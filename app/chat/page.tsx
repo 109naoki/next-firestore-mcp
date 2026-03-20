@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useThreads } from "@/hooks/use-threads";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 const ChatPage = () => {
   const router = useRouter();
@@ -42,7 +43,7 @@ const ChatPage = () => {
   if (authLoading || threadsLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -51,10 +52,10 @@ const ChatPage = () => {
     <div className="flex-1 flex items-center justify-center px-4">
       <div className="text-center space-y-4">
         <h2 className="text-xl font-semibold text-muted-foreground">
-          No conversations yet
+          会話はまだありません
         </h2>
         <Button onClick={handleCreateThread} disabled={isCreating}>
-          {isCreating ? "Creating..." : "Start a new chat"}
+          {isCreating ? "作成中..." : "新しいチャットを始める"}
         </Button>
       </div>
     </div>

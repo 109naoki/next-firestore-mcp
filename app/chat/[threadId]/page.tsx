@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { ChatInterface } from "@/components/ChatInterface";
+import { Loader2 } from "lucide-react";
 
 interface Props {
   params: Promise<{ threadId: string }>;
@@ -42,7 +43,7 @@ const ThreadPage = ({ params }: Props) => {
         const res = await authFetch(`/api/threads/${threadId}`);
 
         if (!res.ok) {
-          setError(res.status === 404 ? "Thread not found" : "Failed to load thread");
+          setError(res.status === 404 ? "スレッドが見つかりません" : "スレッドの読み込みに失敗しました");
           return;
         }
 
@@ -51,7 +52,7 @@ const ThreadPage = ({ params }: Props) => {
         setError(null);
       } catch (err) {
         console.error("Failed to fetch thread:", err);
-        setError("Failed to load thread");
+        setError("スレッドの読み込みに失敗しました");
       } finally {
         setIsLoading(false);
       }
@@ -63,7 +64,7 @@ const ThreadPage = ({ params }: Props) => {
   if (authLoading || isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -72,7 +73,7 @@ const ThreadPage = ({ params }: Props) => {
     return (
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="text-destructive text-center">
-          <p className="text-lg font-semibold mb-2">Error</p>
+          <p className="text-lg font-semibold mb-2">エラー</p>
           <p>{error}</p>
         </div>
       </div>
@@ -82,7 +83,7 @@ const ThreadPage = ({ params }: Props) => {
   if (!threadData) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="text-muted-foreground">No thread data</div>
+        <div className="text-muted-foreground">スレッドデータがありません</div>
       </div>
     );
   }

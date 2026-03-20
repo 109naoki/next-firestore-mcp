@@ -50,7 +50,7 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md p-6 sm:p-8 space-y-6 bg-card rounded-xl shadow-lg border">
-        <h1 className="text-2xl font-semibold text-center">Sign in</h1>
+        <h1 className="text-2xl font-semibold text-center">ログイン</h1>
 
         {error && (
           <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
@@ -62,7 +62,7 @@ const LoginPage = () => {
           <div>
             <Input
               type="email"
-              placeholder="Email"
+              placeholder="メールアドレス"
               {...register("email")}
               disabled={loading}
             />
@@ -75,7 +75,7 @@ const LoginPage = () => {
           <div>
             <Input
               type="password"
-              placeholder="Password"
+              placeholder="パスワード"
               {...register("password")}
               disabled={loading}
             />
@@ -86,7 +86,7 @@ const LoginPage = () => {
             )}
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? "ログイン中..." : "ログイン"}
           </Button>
         </form>
 

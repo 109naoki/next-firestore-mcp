@@ -9,6 +9,7 @@ import { ChatMessages } from "./ChatMessages";
 import { ChatInput, type ParsedFile } from "./ChatInput";
 import { ModelSelector, type ModelId } from "./ModelSelector";
 import { useInvalidateThreads } from "@/hooks/use-threads";
+import { Loader2 } from "lucide-react";
 
 interface InitialMessage {
   id: string;
@@ -136,7 +137,7 @@ export const ChatInterface = ({
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Parse failed");
+        throw new Error(data.error || "ファイルの解析に失敗しました");
       }
       return res.json();
     },
@@ -163,7 +164,7 @@ export const ChatInterface = ({
   if (authLoading || !isAuthenticated) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -187,7 +188,7 @@ export const ChatInterface = ({
       {/* Error display */}
       {error && (
         <div className="px-4 py-2 text-sm text-destructive bg-destructive/10">
-          Error: {error.message}
+          エラー: {error.message}
         </div>
       )}
 

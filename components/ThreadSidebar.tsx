@@ -8,6 +8,7 @@ import { useThreads } from "@/hooks/use-threads";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ThreadSidebarProps {
@@ -56,12 +57,12 @@ export const ThreadSidebar = ({ onNavigate }: ThreadSidebarProps) => {
       <ScrollArea className="flex-1">
         <nav className="p-2 space-y-1">
           {isLoading ? (
-            <p className="text-xs text-muted-foreground text-center py-8">
-              Loading...
-            </p>
+            <div className="flex justify-center py-8">
+              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+            </div>
           ) : !threads || threads.length === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-8">
-              No conversations yet
+              会話はまだありません
             </p>
           ) : (
             threads.map((thread) => (
@@ -86,7 +87,7 @@ export const ThreadSidebar = ({ onNavigate }: ThreadSidebarProps) => {
           className="w-full text-muted-foreground"
           onClick={logout}
         >
-          Sign out
+          サインアウト
         </Button>
       </div>
     </aside>

@@ -84,7 +84,7 @@ const ForgotPasswordPage = () => {
               <div>
                 <Input
                   type="email"
-                  placeholder="Email"
+                  placeholder="メールアドレス"
                   {...register("email")}
                   disabled={loading}
                 />

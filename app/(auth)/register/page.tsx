@@ -64,7 +64,7 @@ const RegisterPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md p-6 sm:p-8 space-y-6 bg-card rounded-xl shadow-lg border">
-        <h1 className="text-2xl font-semibold text-center">Sign up</h1>
+        <h1 className="text-2xl font-semibold text-center">新規登録</h1>
 
         {error && (
           <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
@@ -76,7 +76,7 @@ const RegisterPage = () => {
           <div>
             <Input
               type="email"
-              placeholder="Email"
+              placeholder="メールアドレス"
               {...register("email")}
               disabled={loading}
             />
@@ -89,7 +89,7 @@ const RegisterPage = () => {
           <div>
             <Input
               type="password"
-              placeholder="Password"
+              placeholder="パスワード"
               {...register("password")}
               disabled={loading}
             />
@@ -102,7 +102,7 @@ const RegisterPage = () => {
           <div>
             <Input
               type="password"
-              placeholder="Confirm Password"
+              placeholder="パスワード（確認）"
               {...register("confirmPassword")}
               disabled={loading}
             />
@@ -113,7 +113,7 @@ const RegisterPage = () => {
             )}
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Creating account..." : "Sign up"}
+            {loading ? "登録中..." : "新規登録"}
           </Button>
         </form>
 
