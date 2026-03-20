@@ -38,6 +38,7 @@ export const POST = async (request: NextRequest) => {
   const uiMessages = raw.messages as UIMessage[];
   const threadId = raw.threadId as string;
   const model = (raw.model as string) || "claude-sonnet-4-5";
+  const attachedFileNames = (raw.attachedFileNames as string[]) || [];
 
   if (!uiMessages || !threadId) {
     return new Response(JSON.stringify({ error: "Missing messages or threadId" }), {
@@ -68,11 +69,20 @@ export const POST = async (request: NextRequest) => {
     : "";
 
   if (lastMessage?.role === "user" && userContent) {
-    await threadRef.collection("messages").add({
+    // Strip <attached-files> block from DB content (AI still sees it via modelMessages)
+    const cleanContent = userContent
+      .replace(/<attached-files>[\s\S]*?<\/attached-files>\s*/g, "")
+      .trim();
+
+    const messageData: Record<string, unknown> = {
       role: "user",
-      content: userContent,
+      content: cleanContent || userContent,
       createdAt: FieldValue.serverTimestamp(),
-    });
+    };
+    if (attachedFileNames.length > 0) {
+      messageData.attachedFileNames = attachedFileNames;
+    }
+    await threadRef.collection("messages").add(messageData);
   }
 
   // 6. Convert UIMessages to model messages and stream response

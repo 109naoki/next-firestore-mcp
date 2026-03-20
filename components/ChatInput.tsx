@@ -15,17 +15,21 @@ import { cn } from "@/lib/utils";
 
 const MAX_FILES = 3;
 
+export interface ParsedFile {
+  name: string;
+  content: string;
+}
+
 interface AttachedFile {
   id: string;
   filename: string;
   status: "parsing" | "parsed" | "error";
-  text?: string;
-  truncated?: boolean;
+  content?: string;
   error?: string;
 }
 
 interface Props {
-  onSend: (text: string) => void;
+  onSend: (text: string, files: ParsedFile[]) => void;
   parseFile: (file: File) => Promise<{ text: string; truncated: boolean }>;
   isLoading: boolean;
 }
@@ -37,8 +41,6 @@ export const ChatInput = ({ onSend, parseFile, isLoading }: Props) => {
   const { isSupported, isListening, transcript, start, stop } =
     useSpeechRecognition();
 
-  const isParsing = attachedFiles.some((f) => f.status === "parsing");
-
   useEffect(() => {
     if (transcript && textareaRef.current) {
       const current = textareaRef.current.value;
@@ -46,6 +48,8 @@ export const ChatInput = ({ onSend, parseFile, isLoading }: Props) => {
       textareaRef.current.value = current + separator + transcript;
     }
   }, [transcript]);
+
+  const isParsing = attachedFiles.some((f) => f.status === "parsing");
 
   const handleFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -73,12 +77,7 @@ export const ChatInput = ({ onSend, parseFile, isLoading }: Props) => {
           setAttachedFiles((prev) =>
             prev.map((f) =>
               f.id === id
-                ? {
-                    ...f,
-                    status: "parsed" as const,
-                    text: data.text,
-                    truncated: data.truncated,
-                  }
+                ? { ...f, status: "parsed" as const, content: data.text }
                 : f,
             ),
           );
@@ -112,23 +111,17 @@ export const ChatInput = ({ onSend, parseFile, isLoading }: Props) => {
     if ((!text && parsedFiles.length === 0) || isLoading || isParsing) return;
     if (isListening) stop();
 
-    let composedText = "";
-    if (parsedFiles.length > 0) {
-      composedText += "<attached-files>\n";
-      for (const f of parsedFiles) {
-        composedText += `<file name="${f.filename}">\n${f.text}\n</file>\n`;
-      }
-      composedText += "</attached-files>\n\n";
-    }
-    if (text) composedText += text;
-
-    onSend(composedText);
+    const files: ParsedFile[] = parsedFiles.map((f) => ({
+      name: f.filename,
+      content: f.content!,
+    }));
+    onSend(text || "", files);
     setAttachedFiles([]);
     if (textareaRef.current) textareaRef.current.value = "";
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       handleSubmit();
     }
@@ -157,11 +150,6 @@ export const ChatInput = ({ onSend, parseFile, isLoading }: Props) => {
                   <FileText className="size-3" />
                 )}
                 <span className="max-w-[150px] truncate">{f.filename}</span>
-                {f.truncated && (
-                  <span className="text-[10px] text-muted-foreground">
-                    (truncated)
-                  </span>
-                )}
                 {f.status === "error" && (
                   <span className="text-[10px]">{f.error}</span>
                 )}
@@ -198,7 +186,7 @@ export const ChatInput = ({ onSend, parseFile, isLoading }: Props) => {
           />
           <Textarea
             ref={textareaRef}
-            placeholder="Type a message..."
+            placeholder="メッセージを入力... (Ctrl+Enterで送信)"
             className="resize-none min-h-[44px] sm:min-h-[52px] max-h-[200px] text-sm"
             rows={1}
             onKeyDown={handleKeyDown}
@@ -227,7 +215,7 @@ export const ChatInput = ({ onSend, parseFile, isLoading }: Props) => {
             className="flex-shrink-0"
             size="sm"
           >
-            Send
+            送信
           </Button>
         </div>
       </div>
