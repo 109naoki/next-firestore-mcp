@@ -16,6 +16,7 @@ interface ThreadData {
     id: string;
     role: "user" | "assistant";
     content: string;
+    attachedFileNames?: string[];
   }>;
 }
 

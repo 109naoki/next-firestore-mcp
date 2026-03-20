@@ -15,6 +15,7 @@ export interface ChatMessage {
   role: "user" | "assistant" | "tool";
   content: string;
   parts?: unknown[];
+  attachedFileNames?: string[];
   createdAt: Timestamp;
 }
 
@@ -34,5 +35,6 @@ export interface ChatMessageSerialized {
   role: "user" | "assistant" | "tool";
   content: string;
   parts?: unknown[];
+  attachedFileNames?: string[];
   createdAt: string;
 }

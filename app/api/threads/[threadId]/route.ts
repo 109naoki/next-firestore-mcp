@@ -74,11 +74,17 @@ export const GET = async (
     id: threadId,
     title: threadData.title,
     model: threadData.model || "claude-sonnet-4-5",
-    messages: messages.map((msg) => ({
-      id: msg.id,
-      role: msg.role as "user" | "assistant",
-      content: msg.content,
-    })),
+    messages: messages.map((msg) => {
+      const data: Record<string, unknown> = {
+        id: msg.id,
+        role: msg.role as "user" | "assistant",
+        content: msg.content,
+      };
+      if (msg.attachedFileNames && msg.attachedFileNames.length > 0) {
+        data.attachedFileNames = msg.attachedFileNames;
+      }
+      return data;
+    }),
   };
 
   return Response.json(serialized);

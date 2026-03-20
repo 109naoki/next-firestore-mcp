@@ -46,7 +46,7 @@ export const ThreadSidebar = ({ onNavigate }: ThreadSidebarProps) => {
           className="w-full"
           size="sm"
         >
-          {isCreating ? "Creating..." : "+ New Chat"}
+          {isCreating ? "作成中..." : "+ 新規チャット"}
         </Button>
       </div>
 

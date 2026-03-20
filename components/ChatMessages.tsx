@@ -3,14 +3,15 @@
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "ai";
 import { useState, type ReactNode } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, FileText } from "lucide-react";
 
 interface Props {
   messages: UIMessage[];
   isLoading: boolean;
+  fileNamesMap?: Record<string, string[]>;
 }
 
-export const ChatMessages = ({ messages, isLoading }: Props) => {
+export const ChatMessages = ({ messages, isLoading, fileNamesMap = {} }: Props) => {
   if (messages.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center text-muted-foreground p-8">
@@ -22,14 +23,24 @@ export const ChatMessages = ({ messages, isLoading }: Props) => {
   return (
     <div className="flex flex-col gap-4 sm:gap-6 p-3 sm:p-4 max-w-3xl mx-auto w-full">
       {messages.map((message) => (
-        <MessageBubble key={message.id} message={message} />
+        <MessageBubble
+          key={message.id}
+          message={message}
+          attachedFileNames={fileNamesMap[message.id]}
+        />
       ))}
       {isLoading && <ThinkingIndicator />}
     </div>
   );
 };
 
-const MessageBubble = ({ message }: { message: UIMessage }) => {
+const MessageBubble = ({
+  message,
+  attachedFileNames,
+}: {
+  message: UIMessage;
+  attachedFileNames?: string[];
+}) => {
   const isUser = message.role === "user";
 
   return (
@@ -53,8 +64,25 @@ const MessageBubble = ({ message }: { message: UIMessage }) => {
             : "bg-muted rounded-tl-sm",
         )}
       >
+        {attachedFileNames && attachedFileNames.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {attachedFileNames.map((name) => (
+              <span
+                key={name}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary-foreground/20 text-[11px]"
+              >
+                <FileText className="size-3" />
+                {name}
+              </span>
+            ))}
+          </div>
+        )}
         {message.parts.map((part, i) => (
-          <MessagePartView key={i} part={part} />
+          <MessagePartView
+            key={i}
+            part={part}
+            hasFileNamesFromDb={!!attachedFileNames?.length}
+          />
         ))}
       </div>
     </div>
@@ -63,11 +91,52 @@ const MessageBubble = ({ message }: { message: UIMessage }) => {
 
 const MessagePartView = ({
   part,
+  hasFileNamesFromDb,
 }: {
   part: UIMessage["parts"][number];
+  hasFileNamesFromDb?: boolean;
 }): ReactNode => {
   if (part.type === "text") {
-    return <p className="whitespace-pre-wrap break-words">{part.text}</p>;
+    // Strip <attached-files> block from display (file contents are for AI only)
+    const displayText = part.text
+      .replace(/<attached-files>[\s\S]*?<\/attached-files>\s*/g, "")
+      .trim();
+
+    // Extract file names from XML for live messages (not yet in DB)
+    if (!hasFileNamesFromDb) {
+      const fileNames: string[] = [];
+      const fileNameRegex = /<file name="([^"]+)">/g;
+      let match;
+      while ((match = fileNameRegex.exec(part.text)) !== null) {
+        fileNames.push(match[1]);
+      }
+
+      if (!displayText && fileNames.length === 0) return null;
+
+      return (
+        <>
+          {fileNames.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {fileNames.map((name) => (
+                <span
+                  key={name}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary-foreground/20 text-[11px]"
+                >
+                  <FileText className="size-3" />
+                  {name}
+                </span>
+              ))}
+            </div>
+          )}
+          {displayText && (
+            <p className="whitespace-pre-wrap break-words">{displayText}</p>
+          )}
+        </>
+      );
+    }
+
+    if (!displayText) return null;
+    return <p className="whitespace-pre-wrap break-words">{displayText}</p>;
   }
 
   if (part.type.startsWith("tool-") || part.type === "dynamic-tool") {
