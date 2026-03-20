@@ -89,7 +89,7 @@ export const ChatInput = ({ onSend, parseFile, isLoading }: Props) => {
                 ? {
                     ...f,
                     status: "error" as const,
-                    error: err instanceof Error ? err.message : "Parse failed",
+                    error: err instanceof Error ? err.message : "解析に失敗しました",
                   }
                 : f,
             ),
@@ -172,7 +172,7 @@ export const ChatInput = ({ onSend, parseFile, isLoading }: Props) => {
             onClick={() => fileInputRef.current?.click()}
             disabled={isLoading || attachedFiles.length >= MAX_FILES}
             className="flex-shrink-0"
-            aria-label="Attach file"
+            aria-label="ファイルを添付"
           >
             <Paperclip className="size-4" />
           </Button>
@@ -200,7 +200,7 @@ export const ChatInput = ({ onSend, parseFile, isLoading }: Props) => {
               onClick={isListening ? stop : start}
               disabled={isLoading}
               className={cn("flex-shrink-0", isListening && "animate-pulse")}
-              aria-label={isListening ? "Stop recording" : "Start voice input"}
+              aria-label={isListening ? "録音を停止" : "音声入力を開始"}
             >
               {isListening ? (
                 <MicOff className="size-4" />

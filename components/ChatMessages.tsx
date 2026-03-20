@@ -15,7 +15,7 @@ export const ChatMessages = ({ messages, isLoading, fileNamesMap = {} }: Props) 
   if (messages.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center text-muted-foreground p-8">
-        <p>Send a message to start the conversation.</p>
+        <p>メッセージを送信して会話を始めましょう。</p>
       </div>
     );
   }
@@ -200,7 +200,7 @@ const ToolCallView = ({
           />
         )}
         <span className="font-medium">{toolName}</span>
-        {!isDone && <span className="opacity-60">running...</span>}
+        {!isDone && <span className="opacity-60">実行中...</span>}
       </button>
       {open && hasOutput && (
         <pre className="mt-1 ml-4.5 p-2 rounded bg-background/50 border border-border/50 text-[10px] overflow-x-auto max-h-[200px] overflow-y-auto">
