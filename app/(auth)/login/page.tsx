@@ -90,12 +90,25 @@ const LoginPage = () => {
           </Button>
         </form>
 
-        <p className="text-center text-sm text-muted-foreground">
-          アカウントをお持ちでない方は{" "}
-          <Link href="/register" className="text-primary underline hover:no-underline">
-            新規登録
-          </Link>
-        </p>
+        <div className="text-center text-sm text-muted-foreground space-y-2">
+          <p>
+            <Link
+              href="/forgot-password"
+              className="text-primary underline hover:no-underline"
+            >
+              パスワードをお忘れの方
+            </Link>
+          </p>
+          <p>
+            アカウントをお持ちでない方は{" "}
+            <Link
+              href="/register"
+              className="text-primary underline hover:no-underline"
+            >
+              新規登録
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
