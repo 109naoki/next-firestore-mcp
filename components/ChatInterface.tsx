@@ -192,13 +192,17 @@ export const ChatInterface = ({
         </div>
       )}
 
-      {/* モバイル用モデルセレクター */}
-      <div className="md:hidden border-t px-3 pt-2">
-        <ModelSelector value={selectedModel} onChange={handleModelChange} />
-      </div>
-
       {/* Input */}
-      <ChatInput onSend={handleSend} parseFile={handleParseFile} isLoading={isLoading} />
+      <ChatInput
+        onSend={handleSend}
+        parseFile={handleParseFile}
+        isLoading={isLoading}
+        modelSelector={
+          <div className="md:hidden">
+            <ModelSelector value={selectedModel} onChange={handleModelChange} />
+          </div>
+        }
+      />
     </div>
   );
 };

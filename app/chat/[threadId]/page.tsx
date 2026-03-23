@@ -90,6 +90,7 @@ const ThreadPage = ({ params }: Props) => {
 
   return (
     <ChatInterface
+      key={threadId}
       threadId={threadId}
       initialMessages={threadData.messages}
       threadTitle={threadData.title}
