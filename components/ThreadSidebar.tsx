@@ -38,7 +38,7 @@ export const ThreadSidebar = ({ onNavigate }: ThreadSidebarProps) => {
   };
 
   return (
-    <aside className="w-64 h-full flex flex-col border-r bg-muted/30">
+    <aside className="w-64 h-full flex flex-col border-r bg-background">
       {/* New chat button */}
       <div className="p-3">
         <Button

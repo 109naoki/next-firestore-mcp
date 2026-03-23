@@ -32,9 +32,10 @@ interface Props {
   onSend: (text: string, files: ParsedFile[]) => void;
   parseFile: (file: File) => Promise<{ text: string; truncated: boolean }>;
   isLoading: boolean;
+  modelSelector?: React.ReactNode;
 }
 
-export const ChatInput = ({ onSend, parseFile, isLoading }: Props) => {
+export const ChatInput = ({ onSend, parseFile, isLoading, modelSelector }: Props) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
@@ -164,26 +165,63 @@ export const ChatInput = ({ onSend, parseFile, isLoading }: Props) => {
             ))}
           </div>
         )}
+        {/* モデルセレクター + アクションボタン (モバイル) */}
+        {modelSelector && (
+          <div className="flex items-center justify-between mb-2">
+            {modelSelector}
+            <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading || attachedFiles.length >= MAX_FILES}
+                className="flex-shrink-0"
+                aria-label="ファイルを添付"
+              >
+                <Paperclip className="size-4" />
+              </Button>
+              {isSupported && (
+                <Button
+                  type="button"
+                  variant={isListening ? "destructive" : "ghost"}
+                  size="icon-sm"
+                  onClick={isListening ? stop : start}
+                  disabled={isLoading}
+                  className={cn("flex-shrink-0", isListening && "animate-pulse")}
+                  aria-label={isListening ? "録音を停止" : "音声入力を開始"}
+                >
+                  {isListening ? (
+                    <MicOff className="size-4" />
+                  ) : (
+                    <Mic className="size-4" />
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept=".xlsx,.xls,.pdf,.pptx,.txt,.csv,.json,.md,.xml,.html,.ts,.tsx,.js,.jsx,.py,.yaml,.yml"
+          className="hidden"
+          onChange={handleFileSelect}
+        />
         <div className="flex gap-2 items-end">
+          {/* デスクトップ用: クリップ・マイクボタン */}
           <Button
             type="button"
             variant="ghost"
             size="icon-sm"
             onClick={() => fileInputRef.current?.click()}
             disabled={isLoading || attachedFiles.length >= MAX_FILES}
-            className="flex-shrink-0"
+            className="flex-shrink-0 hidden md:inline-flex"
             aria-label="ファイルを添付"
           >
             <Paperclip className="size-4" />
           </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept=".xlsx,.xls,.pdf,.pptx,.txt,.csv,.json,.md,.xml,.html,.ts,.tsx,.js,.jsx,.py,.yaml,.yml"
-            className="hidden"
-            onChange={handleFileSelect}
-          />
           <Textarea
             ref={textareaRef}
             placeholder="メッセージを入力... (Ctrl+Enterで送信)"
@@ -199,7 +237,7 @@ export const ChatInput = ({ onSend, parseFile, isLoading }: Props) => {
               size="icon-sm"
               onClick={isListening ? stop : start}
               disabled={isLoading}
-              className={cn("flex-shrink-0", isListening && "animate-pulse")}
+              className={cn("flex-shrink-0 hidden md:inline-flex", isListening && "animate-pulse")}
               aria-label={isListening ? "録音を停止" : "音声入力を開始"}
             >
               {isListening ? (
